@@ -1,5 +1,4 @@
 import java.util.*;
-//add time element into method!
 
 public class Elevator {
 	int location;
@@ -18,75 +17,99 @@ public class Elevator {
 		return this.direction;
 	}
 
-	public int ElevatorTime(List<Request> requests, Elevator elevator) {
+	public void ElevatorTime(List<Request> requests, Elevator elevator) {
+		System.out.println("Starting Elevator...");
+		System.out.println();
 		List<Request> activeReq = new ArrayList<>();
+		int i = 0;
 		activeReq.add(requests.get(0));
 		requests.remove(0);
-		int time = 0;
+
 		while (!activeReq.isEmpty()) {
-			// set elevator direction based off of first request
 			if (activeReq.get(0).floor > elevator.location) {
 				elevator.direction = true;
 			} else {
 				elevator.direction = false;
 			}
 			if (activeReq.get(0).isPriority) {
+				System.out.println("floor " + activeReq.get(0).floor + " has priority.  Going to that floor. ");
 				elevator.location = activeReq.get(0).floor;
-				time += 5;
-			} else {
-				for (Request r : requests) {
-					if (elevator.direction) {
-						if (r.floor < activeReq.get(0).floor && r.floor > elevator.location) {
-							activeReq.add(r);
-							requests.remove(r);
-							time += 5;
-						}
-					} else if (!elevator.direction) {
-						if (r.floor > activeReq.get(0).floor && r.floor < elevator.location) {
-							activeReq.add(r);
-							requests.remove(r);
-							time += 5;
-						}
+				activeReq.remove(activeReq.get(0));
+				if (!requests.isEmpty()) {
+					activeReq.add(requests.get(0));
+					requests.remove(0);
+				}
+			}
+			i = 0;
+			while (!requests.isEmpty() && i < requests.size()) {
+				Request r = requests.get(i++);
+				if (elevator.direction) {
+					if (r.floor < activeReq.get(0).floor && r.floor > elevator.location) {
+						activeReq.add(r);
+						requests.remove(r);
+						i--;
+					}
+				} else if (!elevator.direction) {
+					if (r.floor > activeReq.get(0).floor && r.floor < elevator.location) {
+						activeReq.add(r);
+						requests.remove(r);
+						i--;
 					}
 				}
-				while (elevator.location != activeReq.get(0).floor) {
-					for (Request r : activeReq) {
-						if (elevator.direction) {
-							if (r.floor == elevator.location + 1) {
-								elevator.location++;
-								activeReq.remove(r);
-								time += 5;
-							}
-						} else {
-							if (r.floor == elevator.location - 1) {
-								elevator.location--;
-								activeReq.remove(r);
-								time += 5;
-							}
-						}
+			}
+			while (!activeReq.isEmpty()) {
+				boolean flag = false;
+				Request r = activeReq.get(0);
+				int j = 0;
+				for (j = 1; j < activeReq.size(); j++) {
+					if (activeReq.get(j).floor == elevator.location) {
+						flag = true;
+						break;
 					}
 				}
-				for (Request r : requests) {
-					if (elevator.direction) {
-						if (r.floor > elevator.location) {
-							activeReq.add(r);
-						} else {
-							elevator.direction = !elevator.direction;
-							activeReq.add(requests.get(0));
-						}
+				if (flag == true) {
+					System.out.println("request for floor " + elevator.location + " has been completed");
+					activeReq.remove(j);
+				} else if (r.floor == elevator.location) {
+					System.out.println("request for floor " + elevator.location + " has been completed");
+					activeReq.remove(r);
+				}
+				if (elevator.direction) {
+					elevator.location++;
+				} else {
+					elevator.location--;
+				}
+			}
+			i = 0;
+			while (!requests.isEmpty() && i < requests.size()) {
+				Request r = requests.get(i++);
+				if (elevator.direction) {
+					if (r.floor > elevator.location) {
+						activeReq.add(r);
+						requests.remove(r);
+						i--;
 					} else {
-						if (r.floor < elevator.location) {
-							activeReq.add(r);
-						} else {
-							elevator.direction = !elevator.direction;
-							activeReq.add(requests.get(0));
-						}
+						elevator.direction = !elevator.direction;
+						activeReq.add(requests.get(0));
+						requests.remove(0);
+						i--;
+					}
+				} else {
+					if (r.floor < elevator.location) {
+						activeReq.add(r);
+						requests.remove(r);
+						i--;
+					} else {
+						System.out.println("Switching directions");
+						elevator.direction = !elevator.direction;
+						activeReq.add(requests.get(0));
+						requests.remove(0);
+						i--;
 					}
 				}
 			}
 		}
-
 		System.out.println("Requests finished");
-		return time;
+		System.out.println();
 	}
 }
